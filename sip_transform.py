@@ -1,6 +1,56 @@
 import numpy as np
 from astropy.io import fits
 
+# The SIP transform is defined as 
+#
+# (x,y) = [[CD1_1, CD1_2], [CD2_1, CD2_2]] * (u+f, v+g)
+# 
+# so   x = CD1_1*(u+f) + CD1_2*(v+g)
+# and  y = CD2_1*(u+f) + CD2_2*(v+g)
+#
+# 
+#    try:
+#        pc1_1 = header['PC1_1']
+#        pc1_2 = header['PC1_2']
+#        pc2_1 = header['PC2_1']
+#        pc2_2 = header['PC2_2']
+#
+#        cdelt1 = float(header['CDELT1'])
+#        cdelt2 = float(header['CDELT2'])
+#
+#        cd1_1, cd1_2 = cdelt1 * pc1_1, cdelt1 * pc1_2
+#        cd2_1, cd2_2 = cdelt2 * pc2_1, cdelt2 * pc2_2
+#
+#        xrot, yrot, cdelt1, cdelt2 = calc_from_cd(cd1_1, cd1_2,
+#                                                  cd2_1, cd2_2)
+
+#    def calc_from_cd(cd1_1, cd1_2, cd2_1, cd2_2):
+#        det = cd1_1 * cd2_2 - cd1_2 * cd2_1
+#        if det < 0:
+#            sgn = -1
+#        else:
+#            sgn = 1
+        ## if det > 0:
+        ##     raise ValueError("Astrometry is for a right-handed coordinate system")
+#
+#        if (cd2_1 == 0.0) or (cd1_2 == 0.0):
+#            # Unrotated coordinates?
+#            xrot = 0.0
+#            yrot = 0.0
+#            cdelt1 = cd1_1
+#            cdelt2 = cd2_2
+ #       else:
+ #           xrot = math.atan2(sgn * cd1_2, sgn * cd1_1)
+ #           yrot = math.atan2(-cd2_1, cd2_2)
+#
+#            cdelt1 = sgn * math.sqrt(cd1_1**2 + cd1_2**2)
+#            cdelt2 = math.sqrt(cd1_1**2 + cd2_1**2)
+#
+#        return xrot, yrot, cdelt1, cdelt2
+
+
+#FOR NIRCA,B, XSciRef=XDetRef, YSciRef=YDetRef
+
 def xy_from_sip(u, v, header):
 
 	#define the vector (u,v)
@@ -59,8 +109,8 @@ def Apq_sip(header):
 			try:
 				A_p_q[p,q] = header[s]
 			except KeyError:
-				s = ""
-				#print("No "+s)
+				#s = ""
+				print("No "+s)
 
 	return A_p_q
 
@@ -76,8 +126,8 @@ def Bpq_sip(header):
 			try:
 				B_p_q[p,q] = header[s]
 			except KeyError:
-				s=""
-				#print("No "+s)
+				#s=""
+				print("No "+s)
 
 	return B_p_q
 
