@@ -5,6 +5,7 @@ c      integer ideal_to_sci_degree, v_idl_parity,
 c     &     sci_to_ideal_degree, det_sci_parity
 c      double precision 
 c     &     x_det_ref, y_det_ref,
+c     &     x_sci_scale, y_sci_scale,
 c     &     x_sci_ref, y_sci_ref,
 c     &     sci_to_ideal_x, sci_to_ideal_y,
 c     &     ideal_to_sci_x, ideal_to_sci_y,
@@ -38,6 +39,7 @@ c      call  read_siaf_parameters(sca,
 c     &     sci_to_ideal_x, sci_to_ideal_y, sci_to_ideal_degree,
 c     &     ideal_to_sci_x, ideal_to_sci_y, ideal_to_sci_degree,
 c     &     x_det_ref, y_det_ref, x_sci_ref, y_sci_ref,
+c     &     x_sci_scale, y_sci_scale,
 c     &     det_sci_yangle, det_sci_parity,
 c     &     v3_idl_yang, v_idl_parity, v2_ref, v3_ref,
 c     &     verbose)
@@ -81,6 +83,7 @@ c
      &     sci_to_ideal_x, sci_to_ideal_y, sci_to_ideal_degree,
      &     ideal_to_sci_x, ideal_to_sci_y, ideal_to_sci_degree,
      &     x_det_ref, y_det_ref, x_sci_ref, y_sci_ref,
+     &     x_sci_scale, y_sci_scale,
      &     det_sci_yangle, det_sci_parity,
      &     v3_idl_yang, v_idl_parity, v2_ref, v3_ref, verbose)
 
@@ -91,6 +94,7 @@ c
       double precision 
      &     x_det_ref, y_det_ref,
      &     x_sci_ref, y_sci_ref,
+     &     x_sci_scale, y_sci_scale,
      &     sci_to_ideal_x, sci_to_ideal_y,
      &     ideal_to_sci_x, ideal_to_sci_y,
      &     v3_sci_x_angle,v3_sci_y_angle,
@@ -98,7 +102,7 @@ c
      &     det_sci_yangle,
      &     v2_ref, v3_ref
 
-      double precision x_sci_scale, y_sci_scale
+c      double precision x_sci_scale, y_sci_scale
       double precision var
 c     &     v2, v3, var, xx, yy
       integer ii, jj, kk, ll, nterms, nx, ix, iy
@@ -161,6 +165,8 @@ c
       read(87,*) v_idl_parity
       read(87,*) v2_ref
       read(87,*) v3_ref
+
+      print *, 'x_sci_scale, y_sci_scale = ', x_sci_scale, y_sci_scale
 c
 c     set these to a fixed value
 c

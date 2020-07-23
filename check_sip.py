@@ -2,6 +2,52 @@ import numpy as np
 from astropy import wcs
 from astropy.io import fits
 from sip_transform import *
+from convert_siaf_to_sip import *
+
+
+#set CRPIX
+CRPIX1  = np.double(1024.5)
+CRPIX2  = np.double(1024.5)
+print("CRPIX1, CRPIX2 = ",CRPIX1,CRPIX2)
+
+fname_siaf_sca = ["NRCA1_FULL.ascii", "NRCA2_FULL.ascii", "NRCA3_FULL.ascii","NRCA4_FULL.ascii","NRCA5_FULL.ascii"]
+
+siaf, Sci2IdlCoeffX, Sci2IdlCoeffY, nidlc = read_siaf_parameters(fname_siaf_sca[0])
+
+siaf["x_sci_ref"] = 1024.5
+siaf["y_sci_ref"] = 1024.5
+siaf["x_det_ref"] = 1024.5
+siaf["y_det_ref"] = 1024.5
+print("XSciRef = ",siaf["x_sci_ref"])
+print("YSciRef = ",siaf["y_sci_ref"])
+print("SciIdlCoeffX[0,0] = ",Sci2IdlCoeffX[0,0])
+print("SciIdlCoeffY[0,0] = ",Sci2IdlCoeffY[0,0])
+print("SciIdlCoeffX[1,0] = ",Sci2IdlCoeffX[1,0])
+print("SciIdlCoeffY[1,1] = ",Sci2IdlCoeffY[1,1])
+print("SciIdlCoeffX[5,5] = ",Sci2IdlCoeffX[5,5])
+print("SciIdlCoeffY[5,5] = ",Sci2IdlCoeffY[5,5])
+
+
+u = np.double(1.0)
+v = np.double(1.0)
+
+#set the detector coordinates
+xydet = np.zeros(2)
+xydet[0] = u + CRPIX1
+xydet[1] = v + CRPIX2
+
+#get the science coordinates from the 
+#detector coordinates
+xysci = siaf_det_to_sci(xydet, siaf)
+s = "For xydet=(%f,%f), xysci=(%f,%f)" % (xydet[0],xydet[1],xysci[0],xysci[1])
+print(s)
+
+#get the ideal coordinates from the
+#science coordinates
+xyidl = siaf_sci2idl(xysci, siaf, Sci2IdlCoeffX, Sci2IdlCoeffY)
+s = "For xysci=(%f, %f), xyidl = (%14.12e, %14.12e)" % (xysci[0],xysci[1],xyidl[0],xyidl[1])
+print(s)
+exit() 
 
 fname = "gal_test_nn_F200W_481_001.slp.fits"
 

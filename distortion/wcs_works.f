@@ -76,6 +76,9 @@ c
      &     -492.96588887005885d0, -0.11255124074467837d0/
       data aa, bb, ap, bp/81*0.0d0,81*0.0d0,81*0.0d0,81*0.0d0/
 c
+      double precision x_sci_scale_norm, y_sci_scale_norm
+c
+
       files(1)   = './data/NRCA1_FULL.ascii'
       files(2)   = './data/NRCA2_FULL.ascii'
       files(3)   = './data/NRCA3_FULL.ascii'
@@ -89,7 +92,7 @@ c
       files(10)  = './data/NRCB5_FULL.ascii'
 c
       q          = dacos(-1.0d0)/180.0d0
-      verbose    = 0
+      verbose    = 1
       precise    = 0
       subarray   = 'FULL'
       colcornr   = 1
@@ -134,6 +137,7 @@ c
      &     sci_to_ideal_x, sci_to_ideal_y, sci_to_ideal_degree,
      &     ideal_to_sci_x, ideal_to_sci_y, ideal_to_sci_degree,
      &     x_det_ref, y_det_ref, x_sci_ref, y_sci_ref,
+     &     x_sci_scale, y_sci_scale,
      &     det_sci_yangle, det_sci_parity,
      &     v3_idl_yang, v_idl_parity, v2_ref, v3_ref, verbose)
       
@@ -200,6 +204,10 @@ c
       print *, 'v2_sca, v3_sca      ', v2_ref, v3_ref
       print *, 'x_det, y_det        ', x_det, y_det
       print *, 'x_sci, y_sci        ', x_sci, y_sci
+      print *, 'x_sci_scale, y_sci_scale     ', x_sci_scale, y_sci_scale
+      x_sci_scale_norm = x_sci_scale/3600.
+      y_sci_scale_norm = y_sci_scale/3600.
+      print *, 'normed sci_scale', x_sci_scale_norm, y_sci_scale_norm
       print *, 'x_ideal, y_ideal    ', x_ideal, y_ideal
       print *, 'v2_arcsec, v3_arcsec', v2_arcsec, v3_arcsec
       print *, 'ra_rad, dec_rad     ', ra_rad, dec_rad

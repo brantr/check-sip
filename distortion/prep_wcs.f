@@ -148,6 +148,10 @@ c
 c
 c     set first group of WCS keywords
 c
+
+      print *, 'c11, c12 ', c11, c12
+      print *, 'c21, c22 ', c21, c22
+
       ctype1  = 'RA---TAN-SIP'
       ctype2  = 'DEC--TAN-SIP'
       crpix1  = 1024.5d0
