@@ -1,0 +1,469 @@
+# cd1_1, cd1_2 = cdelt1 * pc1_1, cdelt1 * pc1_2
+# cd2_1, cd2_2 = cdelt2 * pc2_1, cdelt2 * pc2_2
+#
+# pc1_1 = det_sci_parity*cos(a)
+# pc1_2 = sin(a)
+# pc2_1 = -det_sci_parity*sin(a)
+# pc2_2 = cos(a)
+
+
+
+
+#### SIP TRANSFORM
+# x_ideal = CD11*(u + f(u,v)) + CD12*(v + g(u,v))
+# y_ideal = CD21*(u + f(u,v)) + CD22*(v + g(u,v))
+# e.g., for A_ORDER = 3
+# f(uv) =   A_2_0*u**2 + A_0_2*v**2 + A_1_1*u*v + A_2_1*u**2*v 
+#         + A_1_2*u*v**2 + A_3_0*u**3 + A_0_3*v**3
+# g(uv) =   B_2_0*u**2 + B_0_2*v**2 + B_1_1*u*v + B_2_1*u**2*v 
+#         + B_1_2*u*v**2 + B_3_0*u**3 + B_0_3*v**3
+
+# pedantically, this is
+# x_ideal =   CD11*u + CD11*A_2_0*u**2 + CD11*A_0_2*v**2
+#           + CD11*A_1_1*u*v + CD11*A_2_1*u**2*v
+#           + CD11*A_1_2*u*v**2 + CD11*A_3_0*u**3 + CD11*A_0_3*v**3
+#			+ CD12*v + CD12*B_2_0*u**2 + CD12*B_0_2*v**2
+#			+ CD12*B_1_1*u*v + CD12*B_2_1*u**2*v 
+#			+ CD12*B_1_2*u*v**2 + CD12*B_3_0*u**3 + CD12*B_0_3*v**3
+#
+# y_ideal =   CD21*u + CD21*A_2_0*u**2 + CD21*A_0_2*v**2
+#           + CD21*A_1_1*u*v + CD21*A_2_1*u**2*v
+#           + CD21*A_1_2*u*v**2 + CD21*A_3_0*u**3 + CD21*A_0_3*v**3
+#			+ CD22*v + CD22*B_2_0*u**2 + CD22*B_0_2*v**2
+#			+ CD22*B_1_1*u*v + CD22*B_2_1*u**2*v 
+#			+ CD22*B_1_2*u*v**2 + CD22*B_3_0*u**3 + CD22*B_0_3*v**3
+
+#SIAF TRANSFORM
+# the siaf transform is
+# x_sci = det_to_sci(x_det)
+# y_sci = det_to_sci(y_det)
+# w = x_sci - x_sci_ref
+# z = y_sci - y_sci_ref
+# x_ideal = Sum_{i=1,deg} Sum_{j=0,i} IdlSciCoefXij w**(i-j) z**j
+# y_ideal = Sum_{i=1,deg} Sum_{j=0,i} IdlSciCoefYij w**(i-j) z**j
+
+# e.g., for Sc2IdlDegree = 3
+# x_ideal =  IdlSciCoefX10*w + IdlSciCoefX11*z
+#          + IdlSciCoefX20*w**2   + IdlSciCoefX21*w*z + IdlSciCoefX22*z**2
+#          + IdlSciCoefX30*w**3   + IdlSciCoefX31*w**2*z 
+#          + IdlSciCoefX32*w*z**2 + IdlSciCoefX33*z**3
+# y_ideal =  IdlSciCoefY10*w + IdlSciCoefX11*z
+#          + IdlSciCoefY20*w**2   + IdlSciCoefY21*w*v + IdlSciCoefY22*z**2
+#          + IdlSciCoefY30*w**3   + IdlSciCoefY31*w**2*z 
+#          + IdlSciCoefY32*w*z**2 + IdlSciCoefY33*z**3
+
+#IdlSciCoeffX10 = CDELT1
+#IdlSciCoeffY11 = CDELT2
+
+# We can identify terms and refactor
+#
+# CD11*u = IdlSciCoefX10*w
+# CD12*v = IdlSciCoefX11*z
+# (CD11*A_2_0 + CD12*B_2_0)*u**2   = IdlSciCoefX20*w**2
+# (CD11*A_1_1 + CD12*B_1_1)*u*v    = IdlSciCoefX21*w*z
+# (CD11*A_0_2 + CD12*B_0_2)*v**2   = IdlSciCoefX22*z**2
+# (CD11*A_1_2 + CD12*B_1_2)*u*v**2 = IdlSciCoefX32*w*z**2
+# (CD11*A_2_1 + CD12*B_2_1)*u**2*v = IdlSciCoefY31*w**2*z
+# (CD11*A_3_0 + CD12*B_3_0)*u**3   = IdlSciCoefX30*w**3
+# (CD11*A_0_3 + CD12*B_0_3)*v**3   = IdlSciCoefX33*z**3
+#
+# CD21*u = IdlSciCoefY10*w
+# CD22*v = IdlSciCoefY11*z
+# (CD21*A_2_0 + CD22*B_2_0)*u**2   = IdlSciCoefY20*w**2
+# (CD21*A_1_1 + CD22*B_1_1)*u*v    = IdlSciCoefY21*w*z
+# (CD21*A_0_2 + CD22*B_0_2)*v**2   = IdlSciCoefY22*z**2
+# (CD21*A_1_2 + CD22*B_1_2)*u*v**2 = IdlSciCoefY32*w*z**2
+# (CD21*A_2_1 + CD22*B_2_1)*u**2*v = IdlSciCoefY31*w**2*z
+# (CD21*A_3_0 + CD22*B_3_0)*u**3   = IdlSciCoefY30*w**3
+# (CD21*A_0_3 + CD22*B_0_3)*v**3   = IdlSciCoefY33*z**3
+
+
+# h = PC11*u
+# k = PC12*v
+# w    = PC11*u + PC12*v = h + k
+# w^n = (h+k)^n = (n 0)*h*k^0 + (n 1)*h^(n-1) * k^1 + (n 2)*h^(n-2) *k^2 + ...
+
+# l = PC21*u
+# m = PC22*v
+# z    = PC21*u + PC22*v = l + m
+# z^n = (l + m)^n = (n 0)*l*m^0 + (n 1)*l^(n-1) * m^1 + (n 2)*l^(n-2) *m^2 + ...
+
+# u = h/PC11
+# v = k/PC12
+
+# l = PC21*(h/PC11) = (PC21/PC11)*h
+# m = PC22*(k/PC12) = (PC22/PC12)*v
+
+# pc1_1 = det_sci_parity*cos(a)
+# pc1_2 = sin(a)
+# pc2_1 = -det_sci_parity*sin(a)
+# pc2_2 = cos(a)
+
+#sin(theta) = a / c
+#csc(theta) = 1 / sin(theta) = c / a
+#cos(theta) = b / c
+#sec(theta) = 1 / cos(theta) = c / b
+#tan(theta) = sin(theta) / cos(theta) = a / b
+#cot(theta) = 1/ tan(theta) = b / a
+#sin2(x) + cos2(x) = 1
+#tan2(x) + 1 = sec2(x)
+#cot2(x) + 1 = csc2(x)
+
+# x_ideal = CDELT1*( h + PC11*A_2_0*(h/PC11)**2 + PC11*A_0_2*(k/PC12)**2
+#           + PC11*A_1_1*(h/PC11)*(k/PC12) + PC11*A_2_1*(h/PC11)**2*(k/PC12)
+#           + PC11*A_1_2*(h/PC11)*(k/PC12)**2 + PC11*A_3_0*(h/PC11)**3 + PC11*A_0_3*(k/PC12)**3
+#			+ PC12*(k/PC12) + PC12*B_2_0*(h/PC11)**2 + PC12*B_0_2*(k/PC12)**2
+#			+ PC12*B_1_1*(h/PC11)*(k/PC12) + PC12*B_2_1*(h/PC11)**2*(k/PC12) 
+#			+ PC12*B_1_2*(h/PC11)*(k/PC12)**2 + PC12*B_3_0*(h/PC11)**3 + PC12*B_0_3*(k/PC12)**3 )
+
+
+# x_ideal =  IdlSciCoefX10*w + IdlSciCoefX11*z
+#          + IdlSciCoefX20*w**2   + IdlSciCoefX21*w*z + IdlSciCoefX22*z**2
+#          + IdlSciCoefX30*w**3   + IdlSciCoefX31*w**2*z 
+#          + IdlSciCoefX32*w*z**2 + IdlSciCoefX33*z**3
+
+
+IdlSciCoefX10*w    = IdlSciCoefX10*(h + k)
+IdlSciCoefX11*z    = IdlSciCoefX11*(l + m)
+IdlSciCoefX20*w**2 = IdlSciCoefX20*(h + k)**2
+IdlSciCoefX21*w*z  = IdlSciCoefX21*(h + k)*(l + m)
+IdlSciCoefX22*z**2 = IdlSciCoefX22*(l + m)**2
+IdlSciCoefX30*w**3 = IdlSciCoefX30*(h + k)**3
+IdlSciCoefX31*w**2*z = IdlSciCoefX31*(h + k)**2*(l + m)
+IdlSciCoefX32*w*z**2 = IdlSciCoefX32*(h + k)*(l + m)**2
+IdlSciCoefX33*z**3   = IdlSciCoefX33*(l + m)**3
+
+CX10 = IdlSciCoefX10/CDELT1 = 1
+
+# h = PC11*u
+# k = PC12*v
+# l = PC21*u
+# m = PC22*v
+
+# h + PC11*A_2_0*(h/PC11)**2 + PC11*A_0_2*(k/PC12)**2
+#           + PC11*A_1_1*(h/PC11)*(k/PC12) + PC11*A_2_1*(h/PC11)**2*(k/PC12)
+#           + PC11*A_1_2*(h/PC11)*(k/PC12)**2 + PC11*A_3_0*(h/PC11)**3 + PC11*A_0_3*(k/PC12)**3
+#			+ k + PC12*B_2_0*(h/PC11)**2 + PC12*B_0_2*(k/PC12)**2
+#			+ PC12*B_1_1*(h/PC11)*(k/PC12) + PC12*B_2_1*(h/PC11)**2*(k/PC12) 
+#			+ PC12*B_1_2*(h/PC11)*(k/PC12)**2 + PC12*B_3_0*(h/PC11)**3 + PC12*B_0_3*(k/PC12)**3
+# =
+#
+#   (h+k) + CX11*(l+m) + CX20*(h+k)**2 + CX21*(h+k)*(l+m) + CX22*(l+m)**2
+# + CX30*(h+k)**3 + CX31*(h+k)**2*(l+m) + CX32*(h+k)*(l+m)**2 + CX33*(l+m)**3
+
+
+# PC11*A_2_0*(h/PC11)**2 + PC11*A_0_2*(k/PC12)**2
+#           + PC11*A_1_1*(h/PC11)*(k/PC12) + PC11*A_2_1*(h/PC11)**2*(k/PC12)
+#           + PC11*A_1_2*(h/PC11)*(k/PC12)**2 + PC11*A_3_0*(h/PC11)**3 + PC11*A_0_3*(k/PC12)**3
+#			+ PC12*B_2_0*(h/PC11)**2 + PC12*B_0_2*(k/PC12)**2
+#			+ PC12*B_1_1*(h/PC11)*(k/PC12) + PC12*B_2_1*(h/PC11)**2*(k/PC12) 
+#			+ PC12*B_1_2*(h/PC11)*(k/PC12)**2 + PC12*B_3_0*(h/PC11)**3 + PC12*B_0_3*(k/PC12)**3
+# =
+#
+#   CX11*(l+m) + CX20*(h+k)**2 + CX21*(h+k)*(l+m) + CX22*(l+m)**2
+# + CX30*(h+k)**3 + CX31*(h+k)**2*(l+m) + CX32*(h+k)*(l+m)**2 + CX33*(l+m)**3
+
+**********************************************************************
+
+FOR NIRCAMA, VIDLPARITY = -1, DETSCIPARITY= -1
+FOR NIRCAMAODD, DETSCIYANGLE = 0
+FOR NIRCAMAEVEN, DETSCIYANGLE = 180
+FOR NIRCAMBODD, DETSCIYANGLE = 180
+FOR NIRCAMBEVEN, DETSCIYANGLE = 0
+
+# pc1_1 = det_sci_parity*cos(a)
+# pc1_2 = sin(a)
+# pc2_1 = -det_sci_parity*sin(a)
+# pc2_2 = cos(a)
+
+FOR NIRCAMAODD
+( (pc1_1, pc_12), (pc2_1, pc2_2) ) = ((-1, 0),(0, 1))
+FOR NIRCAMAEVEN
+( (pc1_1, pc_12), (pc2_1, pc2_2) ) = ((1, 0),(0, -1))
+FOR NIRCAMBODD
+( (pc1_1, pc_12), (pc2_1, pc2_2) ) = ((1, 0),(0, -1))
+FOR NIRCAMBEVEN
+( (pc1_1, pc_12), (pc2_1, pc2_2) ) = ((-1, 0),(0, 1))
+
+FOR NIRCAM pc_12 and pc21 are always 0
+
+
+# h = PC11*u
+# m = PC22*v
+
+# PC11*u + PC11*A_2_0*u**2 + PC11*A_0_2*v**2
+#           + PC11*A_1_1*u*v + PC11*A_2_1*u**2*v
+#           + PC11*A_1_2*u*v**2 + PC11*A_3_0*u**3 + PC11*A_0_3*v**3
+# =
+#
+#   CX1O*(PC11*u) + CX11*(PC22*v) + CX20*(PC11*u)**2 + CX21*(PC11*u)*(PC22*v) + CX22*(PC22*v)**2
+# + CX30*(PC11*u)**3 + CX31*(PC11*u)**2*(PC22*v) + CX32*(PC11*u)*(PC22*v)**2 + CX33*(PC22*v)**3
+
+#IF CDELT1 = IdlSciCoefX10, THEN
+
+#  PC11*A_2_0*u**2 + PC11*A_0_2*v**2
+#           + PC11*A_1_1*u*v + PC11*A_2_1*u**2*v
+#           + PC11*A_1_2*u*v**2 + PC11*A_3_0*u**3 + PC11*A_0_3*v**3
+# =
+#
+#   CX11*(PC22*v) + CX20*(PC11*u)**2 + CX21*(PC11*u)*(PC22*v) + CX22*(PC22*v)**2
+# + CX30*(PC11*u)**3 + CX31*(PC11*u)**2*(PC22*v) + CX32*(PC11*u)*(PC22*v)**2 + CX33*(PC22*v)**3
+
+# CX11 MUST BE 0
+
+#  PC11*A_2_0*u**2 + PC11*A_0_2*v**2
+#           + PC11*A_1_1*u*v + PC11*A_2_1*u**2*v
+#           + PC11*A_1_2*u*v**2 + PC11*A_3_0*u**3 + PC11*A_0_3*v**3
+# =
+#
+#   CX20*(PC11*u)**2 + CX21*(PC11*u)*(PC22*v) + CX22*(PC22*v)**2
+# + CX30*(PC11*u)**3 + CX31*(PC11*u)**2*(PC22*v) + CX32*(PC11*u)*(PC22*v)**2 + CX33*(PC22*v)**3
+
+#MATCHED TERMS
+# PC11*A_2_0 = CX20*(PC11**2)
+# PC11*A_0_2 = CX22*(PC22**2)
+# PC11*A_1_1 = CX21*(PC11)*(PC22)
+# PC11*A_2_1 = CX31*(PC11**2)*(PC22)
+# PC11*A_3_0 = CX30*(PC11**3)
+# PC11*A_0_3 = CX33*(PC22**3)
+
+# A_2_0 = CX20*(PC11**2)*PC11
+# A_0_2 = CX22*(PC22**2)*PC11
+# A_1_1 = CX21*(PC11)*(PC22)*PC11
+# A_2_1 = CX31*(PC11**2)*(PC22)*PC11
+# A_3_0 = CX30*(PC11**3)*PC11
+# A_0_3 = CX33*(PC22**3)*PC11
+
+*************************************************************************
+# A_i_j = CX_(i+j)_j * (PC11)**(i+1) * (PC22)**j
+*************************************************************************
+
+
+
+
+# y_ideal =   CD21*u + CD21*A_2_0*u**2 + CD21*A_0_2*v**2
+#           + CD21*A_1_1*u*v + CD21*A_2_1*u**2*v
+#           + CD21*A_1_2*u*v**2 + CD21*A_3_0*u**3 + CD21*A_0_3*v**3
+#			+ CD22*v + CD22*B_2_0*u**2 + CD22*B_0_2*v**2
+#			+ CD22*B_1_1*u*v + CD22*B_2_1*u**2*v 
+#			+ CD22*B_1_2*u*v**2 + CD22*B_3_0*u**3 + CD22*B_0_3*v**3
+# y_ideal =  IdlSciCoefY10*w + IdlSciCoefY11*z
+#          + IdlSciCoefY20*w**2   + IdlSciCoefY21*w*v + IdlSciCoefY22*z**2
+#          + IdlSciCoefY30*w**3   + IdlSciCoefY31*w**2*z 
+#          + IdlSciCoefY32*w*z**2 + IdlSciCoefY33*z**3
+
+# LET CY11 = IdlSciCoefY11/CDELT2
+# remember CD21 and CD12 = 0
+
+
+#			+ PC22*v + PC22*B_2_0*u**2 + PC22*B_0_2*v**2
+#			+ PC22*B_1_1*u*v + PC22*B_2_1*u**2*v 
+#			+ PC22*B_1_2*u*v**2 + PC22*B_3_0*u**3 + PC22*B_0_3*v**3
+#
+# =
+#
+# CY10*(PC11*u) + CY11*(PC22*v)
+#          + CY20*(PC11*u)**2   + CY21*(PC11*u)*(PC22*v) + CY22*(PC22*v)**2
+#          + CY30*(PC11*u)**3   + CY31*(PC11*u)**2*(PC22*v) 
+#          + CY32*(PC11*u)*(PC22*v)**2 + CY33*(PC22*v)**3
+#
+# MATCHED TERMS
+# PC22*B_2_0 = CY20*(PC11**2)
+# PC22*B_0_2 = CY22*(PC22**2)
+# PC22*B_1_1 = CY21*(PC11)*(PC22)
+# PC22*B_3_0 = CY30*(PC11**3)
+# PC22*B_2_1 = CY31*(PC11**2)*(PC22)
+# PC22*B_1_2 = CY32*(PC11)*(PC22**2)
+# PC22*B_0_3 = CY33*(PC22**3)
+#
+# B_0_2 = CY22*(PC22**3)
+# B_2_0 = CY20*(PC11**2)*PC22
+# B_1_1 = CY21*(PC11)*(PC22**2)
+# B_3_0 = CY30*(PC11**3)*PC22
+# B_2_1 = CY31*(PC11**2)*(PC22**2)
+# B_1_2 = CY32*(PC11)*(PC22**3)
+# B_0_3 = CY33*(PC22**4)
+
+*************************************************************************
+# B_i_j = CY_(i+j)_j * (PC11)**i * (PC22)**(j+1)
+*************************************************************************
+
+
+
+
+OLD STUFF from sip_transform.py
+
+# The SIP transform is defined as 
+#
+# (x,y) = [[CD1_1, CD1_2], [CD2_1, CD2_2]] * (u+f, v+g)
+# 
+# so   x = CD1_1*(u+f) + CD1_2*(v+g)
+# and  y = CD2_1*(u+f) + CD2_2*(v+g)
+#
+# 
+#    try:
+#        pc1_1 = header['PC1_1']
+#        pc1_2 = header['PC1_2']
+#        pc2_1 = header['PC2_1']
+#        pc2_2 = header['PC2_2']
+#
+#        cdelt1 = float(header['CDELT1'])
+#        cdelt2 = float(header['CDELT2'])
+#
+#        cd1_1, cd1_2 = cdelt1 * pc1_1, cdelt1 * pc1_2
+#        cd2_1, cd2_2 = cdelt2 * pc2_1, cdelt2 * pc2_2
+#
+#        xrot, yrot, cdelt1, cdelt2 = calc_from_cd(cd1_1, cd1_2,
+#                                                  cd2_1, cd2_2)
+
+#    def calc_from_cd(cd1_1, cd1_2, cd2_1, cd2_2):
+#        det = cd1_1 * cd2_2 - cd1_2 * cd2_1
+#        if det < 0:
+#            sgn = -1
+#        else:
+#            sgn = 1
+        ## if det > 0:
+        ##     raise ValueError("Astrometry is for a right-handed coordinate system")
+#
+#        if (cd2_1 == 0.0) or (cd1_2 == 0.0):
+#            # Unrotated coordinates?
+#            xrot = 0.0
+#            yrot = 0.0
+#            cdelt1 = cd1_1
+#            cdelt2 = cd2_2
+ #       else:
+ #           xrot = math.atan2(sgn * cd1_2, sgn * cd1_1)
+ #           yrot = math.atan2(-cd2_1, cd2_2)
+#
+#            cdelt1 = sgn * math.sqrt(cd1_1**2 + cd1_2**2)
+#            cdelt2 = math.sqrt(cd1_1**2 + cd2_1**2)
+#
+#        return xrot, yrot, cdelt1, cdelt2
+
+
+#FOR NIRCA,B, XSciRef=XDetRef, YSciRef=YDetRef
+
+def sip_from_siaf(siaf, Sci2IdlCoeffX, Sci2IdlCoeffY):
+
+	#create CDij
+
+	CDij = np.zeros((2,2))
+
+	#compute expansion
+	#uv are pixel coordinates
+
+	#the sip transform is
+	# u = x_det - x_det_ref
+	# v = y_det - y_det_ref
+
+	# for quadratic and higher terms
+	# f(u,v) = Sum_p,q = Apq u**p v**q; p+q<=A_ORDER
+	# g(u,v) = Sum_p,q = Bpq u**p v**q; p+q<=B_ORDER
+
+	# x_ideal = CD11*(u + f(u,v)) + CD12*(v + g(u,v))
+	# y_ideal = CD21*(u + f(u,v)) + CD22*(v + g(u,v))
+	# e.g., for A_ORDER = 3
+	# f(uv) =   A_2_0*u**2 + A_0_2*v**2 + A_1_1*u*v + A_2_1*u**2*v 
+	#         + A_1_2*u*v**2 + A_3_0*u**3 + A_0_3*v**3
+	# g(uv) =   B_2_0*u**2 + B_0_2*v**2 + B_1_1*u*v + B_2_1*u**2*v 
+	#         + B_1_2*u*v**2 + B_3_0*u**3 + B_0_3*v**3
+
+	# pedantically, this is
+	# x_ideal =   CD11*u + CD11*A_2_0*u**2 + CD11*A_0_2*v**2
+	#           + CD11*A_1_1*u*v + CD11*A_2_1*u**2*v
+	#           + CD11*A_1_2*u*v**2 + CD11*A_3_0*u**3 + CD11*A_0_3*v**3
+	#			+ CD12*v + CD12*B_2_0*u**2 + CD12*B_0_2*v**2
+	#			+ CD12*B_1_1*u*v + CD12*B_2_1*u**2*v 
+	#			+ CD12*B_1_2*u*v**2 + CD12*B_3_0*u**3 + CD12*B_0_3*v**3
+
+	# y_ideal =   CD21*u + CD21*A_2_0*u**2 + CD21*A_0_2*v**2
+	#           + CD21*A_1_1*u*v + CD21*A_2_1*u**2*v
+	#           + CD21*A_1_2*u*v**2 + CD21*A_3_0*u**3 + CD21*A_0_3*v**3
+	#			+ CD22*v + CD22*B_2_0*u**2 + CD22*B_0_2*v**2
+	#			+ CD22*B_1_1*u*v + CD22*B_2_1*u**2*v 
+	#			+ CD22*B_1_2*u*v**2 + CD22*B_3_0*u**3 + CD22*B_0_3*v**3
+
+	# h = CD11*u
+	# k = CD12*v
+	# w    = CD11*u + CD12*v = h + k
+	# w^n = (h+k)^n = (n 0)*h*k^0 + (n 1)*h^(n-1) * k^1 + (n 2)*h^(n-2) *k^2 + ...
+
+
+	#the siaf transform is
+	# x_sci = det_to_sci(x_det)
+	# y_sci = det_to_sci(y_det)
+	# w = x_sci - x_sci_ref
+	# z = y_sci - y_sci_ref
+	# x_ideal = Sum_{i=1,deg} Sum_{j=0,i} IdlSciCoefXij w**(i-j) z**j
+	# y_ideal = Sum_{i=1,deg} Sum_{j=0,i} IdlSciCoefYij w**(i-j) z**j
+
+	# e.g., for Sc2IdlDegree = 3
+	# x_ideal =  IdlSciCoefX10*w + IdlSciCoefX11*z
+	#          + IdlSciCoefX20*w**2   + IdlSciCoefX21*w*z + IdlSciCoefX22*z**2
+	#          + IdlSciCoefX30*w**3   + IdlSciCoefX31*w**2*z 
+	#          + IdlSciCoefX32*w*z**2 + IdlSciCoefX33*z**3
+	# y_ideal =  IdlSciCoefY10*w + IdlSciCoefX11*z
+	#          + IdlSciCoefY20*w**2   + IdlSciCoefY21*w*v + IdlSciCoefY22*z**2
+	#          + IdlSciCoefY30*w**3   + IdlSciCoefY31*w**2*z 
+	#          + IdlSciCoefY32*w*z**2 + IdlSciCoefY33*z**3
+
+	# We can identify terms and refactor
+	#
+	# CD11*u = IdlSciCoefX10*w
+	# CD12*v = IdlSciCoefX11*z
+	# (CD11*A_2_0 + CD12*B_2_0)*u**2   = IdlSciCoefX20*w**2
+	# (CD11*A_1_1 + CD12*B_1_1)*u*v    = IdlSciCoefX21*w*z
+	# (CD11*A_0_2 + CD12*B_0_2)*v**2   = IdlSciCoefX22*z**2
+	# (CD11*A_1_2 + CD12*B_1_2)*u*v**2 = IdlSciCoefX32*w*z**2
+	# (CD11*A_2_1 + CD12*B_2_1)*u**2*v = IdlSciCoefY31*w**2*z
+	# (CD11*A_3_0 + CD12*B_3_0)*u**3   = IdlSciCoefX30*w**3
+	# (CD11*A_0_3 + CD12*B_0_3)*v**3   = IdlSciCoefX33*z**3
+	#
+	# CD21*u = IdlSciCoefY10*w
+	# CD22*v = IdlSciCoefY11*z
+	# (CD21*A_2_0 + CD22*B_2_0)*u**2   = IdlSciCoefY20*w**2
+	# (CD21*A_1_1 + CD22*B_1_1)*u*v    = IdlSciCoefY21*w*z
+	# (CD21*A_0_2 + CD22*B_0_2)*v**2   = IdlSciCoefY22*z**2
+	# (CD21*A_1_2 + CD22*B_1_2)*u*v**2 = IdlSciCoefY32*w*z**2
+	# (CD21*A_2_1 + CD22*B_2_1)*u**2*v = IdlSciCoefY31*w**2*z
+	# (CD21*A_3_0 + CD22*B_3_0)*u**3   = IdlSciCoefY30*w**3
+	# (CD21*A_0_3 + CD22*B_0_3)*v**3   = IdlSciCoefY33*z**3
+
+	#transform det to sci
+	#deg_to_rad = np.pi/180.0
+	#angle = siaf["det_sci_yangle"] * deg_to_rad
+	#cosa  = np.cos(angle)
+	#sina  = np.sin(angle)
+	#t1       = (xydet[0]- x_det_ref)*cosa + (xydet[1]-y_det_ref)*sina
+	#xysci[0] = x_sci_ref + det_sci_parity * t1
+	#t2 = -1.*(xydet[0]-x_det_ref)*sina + (xydet[1]-y_det_ref)*cosa
+	#xysci[1] = y_sci_ref + t2
+	#
+	# w = det_sci_parity * u * cos(a) + det_sci_parity * v * sin(a)
+	# z = -u * sin(a) + v * cos(a)
+
+	# BEING VERY PEDANTIC NOW
+	# CD11*u = IdlSciCoefX10*w = IdlSciCoefX10*(det_sci_parity * u * cos(a) + det_sci_parity * v * sin(a))
+	# CD12*v = IdlSciCoefX11*z = IdlSciCoefX11*(-u * sin(a) + v * cos(a))
+	# CD21*u = IdlSciCoefY10*w = IdlSciCoefY10*det_sci_parity(u*cos(a) + v*sin(a))
+	# CD22*v = IdlSciCoefY11*z = IdlSciCoefY11*(-u * sin(a) + v * cos(a))
+
+	# cd1_1, cd1_2 = cdelt1 * pc1_1, cdelt1 * pc1_2
+    # cd2_1, cd2_2 = cdelt2 * pc2_1, cdelt2 * pc2_2
+    #
+    # pc1_1 = det_sci_parity*cos(a)
+    # pc1_2 = det_sci_parity*sin(a)
+    # pc2_1 = -sin(a)
+    # pc2_2 = cos(a)
+
+    # SCX10 = IDLSciCoefX10/CDELT1
+
+    # PC11*u = SCX10*PC11*u + SCX10*PC12*v
+    # PC12*v = SCX11*PC21*u + SCX11*PC22*v
+
+    # SCX10 = PC11u/(PC11*u + PC12*v)
+    # SCX11 = PC12u/(PC21*u + PC22*v)
+
+	# 
+	# (w,z) = ((det_sci_parity*cos(a), det_sci_parity*sin(a)),(-sin(a), cos(a))) * (u, v)
+

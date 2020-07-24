@@ -12,7 +12,7 @@ print("CRPIX1, CRPIX2 = ",CRPIX1,CRPIX2)
 
 fname_siaf_sca = ["NRCA1_FULL.ascii", "NRCA2_FULL.ascii", "NRCA3_FULL.ascii","NRCA4_FULL.ascii","NRCA5_FULL.ascii"]
 
-siaf, Sci2IdlCoeffX, Sci2IdlCoeffY, nidlc = read_siaf_parameters(fname_siaf_sca[0])
+siaf, Sci2IdlCoeffX, Sci2IdlCoeffY, nidlc = siaf_read_parameters(fname_siaf_sca[0])
 
 siaf["x_sci_ref"] = 1024.5
 siaf["y_sci_ref"] = 1024.5
@@ -20,6 +20,10 @@ siaf["x_det_ref"] = 1024.5
 siaf["y_det_ref"] = 1024.5
 print("XSciRef = ",siaf["x_sci_ref"])
 print("YSciRef = ",siaf["y_sci_ref"])
+print("V3SciXAng = ",siaf["v3_sci_x_angle"])
+print("V3SciYAng = ",siaf["v3_sci_y_angle"])
+print("V3IdlYAng = ",siaf["v3_idl_yang"])
+print("VSciParity = ",siaf["v_idl_parity"])
 print("SciIdlCoeffX[0,0] = ",Sci2IdlCoeffX[0,0])
 print("SciIdlCoeffY[0,0] = ",Sci2IdlCoeffY[0,0])
 print("SciIdlCoeffX[1,0] = ",Sci2IdlCoeffX[1,0])
@@ -47,6 +51,11 @@ print(s)
 xyidl = siaf_sci2idl(xysci, siaf, Sci2IdlCoeffX, Sci2IdlCoeffY)
 s = "For xysci=(%f, %f), xyidl = (%14.12e, %14.12e)" % (xysci[0],xysci[1],xyidl[0],xyidl[1])
 print(s)
+
+#get the sip coefficients from the Sci2IdlCoeffs
+
+#Apq, Bpq = sip_from_siaf(siaf, Sci2IdlCoeffX, Sci2IdlCoeffY)
+
 exit() 
 
 fname = "gal_test_nn_F200W_481_001.slp.fits"

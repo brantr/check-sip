@@ -1,6 +1,6 @@
 import numpy as np
 
-def read_siaf_parameters(siaf_file):
+def siaf_read_parameters(siaf_file):
 	fp = open(siaf_file,"r")
 	fl = fp.readlines()
 	fp.close()
@@ -107,3 +107,44 @@ def siaf_det_to_sci(xydet,siaf):
 	xysci[1] = y_sci_ref + t2
 
 	return xysci
+
+
+def siaf_to_sip(siaf,Sci2IdlCoefX, Sci2IdlCoefY):
+
+	#convert siaf expansion coefficients
+	#to SIP expansion coefficients
+
+	#*************************************************************************
+	# NC11 = DetSciParity * cos(DetSciYAngle)
+	# NC12 = DetSciParity * sin(DetSciYAngle) = 0
+	# NC21 = -sin(DetSciYAngle) = 0
+	# NC22 = cos(DetSciYAngle)
+	# A_i_j = CX_(i+j)_j * (PC11)**(i+1) * (PC22)**j
+	# B_i_j = CY_(i+j)_j * (PC11)**i     * (PC22)**(j+1)
+	# CDELT1 = Sci2IdlX10
+	# CDELT2 = Sci2IdlY11 
+	#*************************************************************************
+	nx = siaf["sci_to_idl_degree"]
+	Apq = np.array((nx,nx))
+	Bpq = np.array((nx,nx))
+
+	deg_to_rad = np.pi/180.0
+	angle = siaf["det_sci_yangle"] * deg_to_rad
+
+	NC11 = siaf["det_sci_parity"] * np.cos(angle)
+	NC22 = np.cos(angle)
+
+	CDELT1 = np.abs(Sci2IdlCoefX[1,0])
+	CDELT2 = np.abs(Sci2IdlCoefY[1,1])
+
+	degree = nx
+	for i in range(1,degree+1):
+		for j in range(1,degree+1):
+			Apq[i,j] = Sci2IdlCoefX[i+j,j] *(NC11**(i+1))*(NC22**j)
+			Bpq[i,j] = Sci2IdlCoefY[i+j,j] *(NC11**i)*(NC22**j+1)
+
+	#store the expansion order
+	A_ORDER = degree
+	B_ORDER = degree
+
+	return CDELT1, CDELT2, Apq, Bpq, A_ORDER, B_ORDER
