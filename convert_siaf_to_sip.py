@@ -29,9 +29,11 @@ def siaf_read_parameters(siaf_file):
 	siaf["sci_to_idl_degree"] = np.int(fl[14].split()[0])
 
 
-	print("x_sci_scale = ",siaf["x_sci_scale"])
-	print("y_sci_scale = ",siaf["y_sci_scale"])
-	print("sci_to_idl_degree = ",siaf["sci_to_idl_degree"])
+	verbose = False
+	if(verbose):
+		print("x_sci_scale = ",siaf["x_sci_scale"])
+		print("y_sci_scale = ",siaf["y_sci_scale"])
+		print("sci_to_idl_degree = ",siaf["sci_to_idl_degree"])
 
 	nx = siaf["sci_to_idl_degree"]
 	nterms = nx*(nx+1)/2
@@ -62,20 +64,26 @@ def siaf_read_parameters(siaf_file):
 
 
 def siaf_sci2idl(xysci, siaf, Sci2IdlCoefX, Sci2IdlCoefY):
-	degree = siaf["sci_to_idl_degree"]
 
+	verbose = False
+
+	xyidl = np.zeros(2)
+	degree = siaf["sci_to_idl_degree"]
 	dxsci = xysci[0] - siaf['x_sci_ref']
 	dysci = xysci[1] - siaf['y_sci_ref']
 
-	print("dxsci, dysci = ",dxsci,dysci)
-	xyidl = np.zeros(2)
-	print("degree = ",degree)
+	if(verbose):
+		print("dxsci, dysci = ",dxsci,dysci)
+
+	if(verbose):
+		print("degree = ",degree)
 	for i in range(1,degree):
 		for j in range(i+1):
 			xyidl[0] += Sci2IdlCoefX[i,j]*(dxsci**(i-j))*(dysci**j)
 			xyidl[1] += Sci2IdlCoefY[i,j]*(dxsci**(i-j))*(dysci**j)
-			s = "i %d j %d CX % 5.4e CY % 5.4e xi % 9.8e yi % 9.8e" % (i,j,Sci2IdlCoefX[i,j],Sci2IdlCoefY[i,j],xyidl[0],xyidl[1])
-			print(s)
+			if(verbose):
+				s = "i %d j %d CX % 5.4e CY % 5.4e xi % 9.8e yi % 9.8e" % (i,j,Sci2IdlCoefX[i,j],Sci2IdlCoefY[i,j],xyidl[0],xyidl[1])
+				print(s)
 
 	return xyidl
 
@@ -134,6 +142,10 @@ def siaf_to_sip(siaf,Sci2IdlCoefX, Sci2IdlCoefY):
 	NC11 = siaf["det_sci_parity"] * np.cos(angle)
 	NC22 = np.cos(angle)
 
+	NC = np.zeros((2,2))
+	NC[0,0] = NC11
+	NC[1,1] = NC22
+
 	#print("NC11, NC22 = ",NC11,NC22)
 
 	CDELT1 = np.abs(Sci2IdlCoefX[1,0])
@@ -144,7 +156,7 @@ def siaf_to_sip(siaf,Sci2IdlCoefX, Sci2IdlCoefY):
 	degree = nx
 	for i in range(0,degree):
 		for j in range(0,degree-i):
-			print(i,j,nx)
+			#print(i,j,nx)
 			Apq[i,j] = (Sci2IdlCoefX[i+j,j]/CDELT1) *(NC11**(i+1))*(NC22**j)
 			Bpq[i,j] = (Sci2IdlCoefY[i+j,j]/CDELT2) *(NC11**i)*(NC22**(j+1))
 
@@ -160,4 +172,4 @@ def siaf_to_sip(siaf,Sci2IdlCoefX, Sci2IdlCoefY):
 	A_ORDER = degree
 	B_ORDER = degree
 
-	return CDELT1, CDELT2, Apq, Bpq, A_ORDER, B_ORDER
+	return CDELT1, CDELT2, NC, Apq, Bpq, A_ORDER, B_ORDER
