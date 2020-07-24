@@ -8,8 +8,8 @@ def xy_from_sip(u, v, CDij, Apq, Bpq, A_ORDER, B_ORDER):
 	print("uu,vv = ",uv)
 
 	#add the f(u,v) and g(u,v) functions
-	fuv = sip_fuv(u,v,Apq,A_ORDER)
-	guv = sip_guv(u,v,Bpq,B_ORDER)
+	fuv = sip_fuv(u,v,Apq)
+	guv = sip_guv(u,v,Bpq)
 	print("xsum, ysum = ",fuv,guv)
 
 	uv[0] += fuv # u + f(u,v)

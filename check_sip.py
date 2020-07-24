@@ -25,9 +25,13 @@ print("V3SciYAng = ",siaf["v3_sci_y_angle"])
 print("V3IdlYAng = ",siaf["v3_idl_yang"])
 print("VSciParity = ",siaf["v_idl_parity"])
 print("SciIdlCoeffX[0,0] = ",Sci2IdlCoeffX[0,0])
-print("SciIdlCoeffY[0,0] = ",Sci2IdlCoeffY[0,0])
+print("SciIdlCoeffX[0,0] = ",Sci2IdlCoeffX[0,0])
 print("SciIdlCoeffX[1,0] = ",Sci2IdlCoeffX[1,0])
-print("SciIdlCoeffY[1,1] = ",Sci2IdlCoeffY[1,1])
+print("SciIdlCoeffX[1,1] = ",Sci2IdlCoeffX[1,1])
+print("SciIdlCoeffX[2,0] = ",Sci2IdlCoeffX[2,0])
+print("SciIdlCoeffX[2,1] = ",Sci2IdlCoeffX[2,1])
+print("SciIdlCoeffX[2,0] = ",Sci2IdlCoeffX[2,2])
+
 print("SciIdlCoeffX[5,5] = ",Sci2IdlCoeffX[5,5])
 print("SciIdlCoeffY[5,5] = ",Sci2IdlCoeffY[5,5])
 
@@ -54,7 +58,27 @@ print(s)
 
 #get the sip coefficients from the Sci2IdlCoeffs
 
-#Apq, Bpq = sip_from_siaf(siaf, Sci2IdlCoeffX, Sci2IdlCoeffY)
+CDELT1, CDELT2, Apq, Bpq, A_ORDER, B_ORDER = siaf_to_sip(siaf, Sci2IdlCoeffX, Sci2IdlCoeffY)
+
+verbose = False
+if(verbose):
+	for p in range(Apq.shape[0]):
+		for q in range(Apq.shape[1]-p):
+			s = "p %d q %d i+j %d j %d CX % 14.13e CY % 14.13e " % (p,q,p+q,q,Apq[p,q],Bpq[p,q])
+			print(s)
+
+	for p in range(Apq.shape[0]):
+		for q in range(Apq.shape[1]-p):
+			s = "p %d q %d Apq % 14.13e Bpq % 14.13e " % (p,q,Apq[p,q],Bpq[p,q])
+			print(s)
+
+#set CDij
+CDij = ((CDELT1, 0), (0, CDELT2))
+
+#compute SIP expansion
+xy = xy_from_sip(u, v, CDij, Apq, Bpq, A_ORDER, B_ORDER)
+s = "For u,v=(%f,%f), xy=(%14.12e, %14.12e)" % (u,v,xy[0],xy[1])
+print(s)
 
 exit() 
 
@@ -130,6 +154,45 @@ world = w.all_pix2world(pixcrd, 0)
 print(world)
 
 
+#i 1 j 0 CX  3.1139e-02 CY  2.5754e-05 xi -3.11392706e-02 yi -2.57544769e-05
+#i 1 j 1 CX  0.0000e+00 CY  3.1322e-02 xi -3.11392706e-02 yi  3.12965629e-02
+#i 2 j 0 CX  2.6479e-09 CY  6.6304e-08 xi -3.11392679e-02 yi  3.12966292e-02
+#i 2 j 1 CX -2.0728e-07 CY  3.9248e-08 xi -3.11390606e-02 yi  3.12965899e-02
+#i 2 j 2 CX -3.4585e-08 CY -1.4301e-07 xi -3.11390952e-02 yi  3.12964469e-02
+#i 3 j 0 CX  9.9814e-12 CY  5.6684e-13 xi -3.11390952e-02 yi  3.12964469e-02
+#i 3 j 1 CX  1.9623e-12 CY  9.3897e-12 xi -3.11390952e-02 yi  3.12964469e-02
+#i 3 j 2 CX  1.1383e-11 CY  1.5175e-12 xi -3.11390952e-02 yi  3.12964469e-02
+#i 3 j 3 CX  9.9310e-13 CY  1.1021e-11 xi -3.11390952e-02 yi  3.12964469e-02
+#i 4 j 0 CX -7.5499e-16 CY -1.2449e-16 xi -3.11390952e-02 yi  3.12964469e-02
+#i 4 j 1 CX -8.4298e-16 CY -6.7492e-16 xi -3.11390952e-02 yi  3.12964469e-02
+#i 4 j 2 CX -9.6680e-16 CY -1.0749e-15 xi -3.11390952e-02 yi  3.12964469e-02
+#i 4 j 3 CX -8.3657e-16 CY -6.4470e-16 xi -3.11390952e-02 yi  3.12964469e-02
+#i 4 j 4 CX -1.7431e-16 CY -8.8158e-16 xi -3.11390952e-02 yi  3.12964469e-02
+#i 5 j 0 CX  1.4128e-19 CY  3.7366e-21 xi -3.11390952e-02 yi  3.12964469e-02
+#i 5 j 1 CX  9.6091e-21 CY  1.5857e-19 xi -3.11390952e-02 yi  3.12964469e-02
+#i 5 j 2 CX  2.9035e-19 CY  1.6127e-20 xi -3.11390952e-02 yi  3.12964469e-02
+#i 5 j 3 CX  7.8866e-21 CY  2.9722e-19 xi -3.11390952e-02 yi  3.12964469e-02
+#i 5 j 4 CX  1.4538e-19 CY  1.1329e-20 xi -3.11390952e-02 yi  3.12964469e-02
+#i 5 j 5 CX -4.3172e-22 CY  1.3700e-19 xi -3.11390952e-02 yi  3.12964469e-02
 
-
-
+#p 0 q 0 i+j 0 j 0 CX -0.0000000000000e+00 CY  0.0000000000000e+00
+#p 0 q 1 i+j 1 j 1 CX  0.0000000000000e+00 CY  3.1322317344598e-02
+#p 0 q 2 i+j 2 j 2 CX -3.4585136135670e-08 CY -1.4301268526321e-07
+#p 0 q 3 i+j 3 j 3 CX  9.9309668917683e-13 CY  1.1021330139259e-11
+#p 0 q 4 i+j 4 j 4 CX -1.7431228696624e-16 CY -8.8158086621863e-16
+#p 0 q 5 i+j 5 j 5 CX -4.3171561141436e-22 CY  1.3699613093905e-19
+#p 1 q 0 i+j 1 j 0 CX  3.1139270573204e-02 CY  2.5754476873595e-05
+#p 1 q 1 i+j 2 j 1 CX -2.0728141170157e-07 CY  3.9247807945874e-08
+#p 1 q 2 i+j 3 j 2 CX  1.1382764595793e-11 CY  1.5174647869935e-12
+#p 1 q 3 i+j 4 j 3 CX -8.3656634546455e-16 CY -6.4470479152582e-16
+#p 1 q 4 i+j 5 j 4 CX  1.4538020584747e-19 CY  1.1329298384821e-20
+#p 2 q 0 i+j 2 j 0 CX  2.6478689607189e-09 CY  6.6303854242098e-08
+#p 2 q 1 i+j 3 j 1 CX  1.9623269772875e-12 CY  9.3896655770785e-12
+#p 2 q 2 i+j 4 j 2 CX -9.6680295804739e-16 CY -1.0749273161663e-15
+#p 2 q 3 i+j 5 j 3 CX  7.8866015622962e-21 CY  2.9721796374688e-19
+#p 3 q 0 i+j 3 j 0 CX  9.9813648422923e-12 CY  5.6683700303698e-13
+#p 3 q 1 i+j 4 j 1 CX -8.4297715210866e-16 CY -6.7491979672650e-16
+#p 3 q 2 i+j 5 j 2 CX  2.9034833520774e-19 CY  1.6126926350745e-20
+#p 4 q 0 i+j 4 j 0 CX -7.5498954275526e-16 CY -1.2448546551204e-16
+#p 4 q 1 i+j 5 j 1 CX  9.6091055290891e-21 CY  1.5856757785470e-19
+#p 5 q 0 i+j 5 j 0 CX  1.4128314056249e-19 CY  3.7365835042945e-21

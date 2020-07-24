@@ -74,7 +74,7 @@ def siaf_sci2idl(xysci, siaf, Sci2IdlCoefX, Sci2IdlCoefY):
 		for j in range(i+1):
 			xyidl[0] += Sci2IdlCoefX[i,j]*(dxsci**(i-j))*(dysci**j)
 			xyidl[1] += Sci2IdlCoefY[i,j]*(dxsci**(i-j))*(dysci**j)
-			s = "i %d j %d CX %5.4e CY %5.4e xi %9.8e yi %9.8e" % (i,j,Sci2IdlCoefX[i,j],Sci2IdlCoefY[i,j],xyidl[0],xyidl[1])
+			s = "i %d j %d CX % 5.4e CY % 5.4e xi % 9.8e yi % 9.8e" % (i,j,Sci2IdlCoefX[i,j],Sci2IdlCoefY[i,j],xyidl[0],xyidl[1])
 			print(s)
 
 	return xyidl
@@ -124,9 +124,9 @@ def siaf_to_sip(siaf,Sci2IdlCoefX, Sci2IdlCoefY):
 	# CDELT1 = Sci2IdlX10
 	# CDELT2 = Sci2IdlY11 
 	#*************************************************************************
-	nx = siaf["sci_to_idl_degree"]
-	Apq = np.array((nx,nx))
-	Bpq = np.array((nx,nx))
+	nx  = siaf["sci_to_idl_degree"]
+	Apq = np.zeros((nx,nx))
+	Bpq = np.zeros((nx,nx))
 
 	deg_to_rad = np.pi/180.0
 	angle = siaf["det_sci_yangle"] * deg_to_rad
@@ -134,14 +134,27 @@ def siaf_to_sip(siaf,Sci2IdlCoefX, Sci2IdlCoefY):
 	NC11 = siaf["det_sci_parity"] * np.cos(angle)
 	NC22 = np.cos(angle)
 
+	#print("NC11, NC22 = ",NC11,NC22)
+
 	CDELT1 = np.abs(Sci2IdlCoefX[1,0])
 	CDELT2 = np.abs(Sci2IdlCoefY[1,1])
 
+	#print("CDELT1, CDELT2 = ",CDELT1, CDELT2)
+
 	degree = nx
-	for i in range(1,degree+1):
-		for j in range(1,degree+1):
-			Apq[i,j] = Sci2IdlCoefX[i+j,j] *(NC11**(i+1))*(NC22**j)
-			Bpq[i,j] = Sci2IdlCoefY[i+j,j] *(NC11**i)*(NC22**j+1)
+	for i in range(0,degree):
+		for j in range(0,degree-i):
+			print(i,j,nx)
+			Apq[i,j] = (Sci2IdlCoefX[i+j,j]/CDELT1) *(NC11**(i+1))*(NC22**j)
+			Bpq[i,j] = (Sci2IdlCoefY[i+j,j]/CDELT2) *(NC11**i)*(NC22**(j+1))
+
+	#remove the constant and linear terms
+	#note -- will leave extra linear term Bpq[1,0]
+	Apq[0,0] = 0
+	Apq[1,0] = 0
+	Bpq[0,0] = 0
+	Bpq[0,1] = 0
+
 
 	#store the expansion order
 	A_ORDER = degree
