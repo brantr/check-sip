@@ -1,6 +1,6 @@
 import numpy as np
-from astropy import wcs
-from astropy.io import fits
+#from astropy import wcs
+#from astropy.io import fits
 from sip_transform import *
 from convert_siaf_to_sip import *
 import sys
