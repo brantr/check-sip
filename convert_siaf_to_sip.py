@@ -146,7 +146,7 @@ def siaf_to_sip(siaf,Sci2IdlCoefX, Sci2IdlCoefY):
 	NC[0,0] = NC11
 	NC[1,1] = NC22
 
-	#print("NC11, NC22 = ",NC11,NC22)
+	print("NC11, NC22 = ",NC11,NC22)
 
 	CDELT1 = np.abs(Sci2IdlCoefX[1,0])
 	CDELT2 = np.abs(Sci2IdlCoefY[1,1])
@@ -161,7 +161,15 @@ def siaf_to_sip(siaf,Sci2IdlCoefX, Sci2IdlCoefY):
 			Bpq[i,j] = (Sci2IdlCoefY[i+j,j]/CDELT2) *(NC11**i)*(NC22**(j+1))
 
 	#remove the constant and linear terms
+	#in sip, the (xx,yy) linear terms are modeled by 
+	#the rotation matrix, while the (yy,xx) linear
+	#terms are "bonus" and may be non zero
 	#note -- will leave extra linear term Bpq[1,0]
+	#print("Apq 00", Apq[0,0], Sci2IdlCoefX[0,0])
+	#print("Apq 10", Apq[1,0], Sci2IdlCoefX[1,0])
+	#print("Bpq 00", Bpq[0,0], Sci2IdlCoefX[0,0])
+	#print("Bpq 01", Bpq[0,1], Sci2IdlCoefX[1,0])
+
 	Apq[0,0] = 0
 	Apq[1,0] = 0
 	Bpq[0,0] = 0

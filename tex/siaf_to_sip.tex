@@ -1,0 +1,249 @@
+\documentclass[10pt]{article}
+\usepackage[legalpaper, portrait, margin=1in]{geometry}
+\usepackage[scaled]{helvet}
+\usepackage[T1]{fontenc}
+\renewcommand{\familydefault}{\sfdefault}
+\newcommand{\sipA}[2]{\ensuremath{\mathtt{A}_{#1 #2}}}
+\newcommand{\sipB}[2]{\ensuremath{\mathtt{B}_{#1 #2}}}
+%\newcommand{\NCu}{\ensuremath{NC_{11}}}
+%\newcommand{\NCv}{\ensuremath{NC_{22}}}
+\newcommand{\NCu}{\ensuremath{\mathtt{PC1\_1}}}
+\newcommand{\NCv}{\ensuremath{\mathtt{PC2\_2}}}
+\title{SIAF to SIP Conversion}
+\author{Brant Robertson}
+\begin{document}
+\maketitle
+\section{Overview}
+We want to determine the translation between the SIAF and SIP 
+polynomial distortion models. Below, we define the expansion models
+and then identify like terms. We will write down the relation between
+the SIAF and SIP expansion coefficients succinctly at the end.
+
+\section{SIP Expansion Definition}
+The Simple Imaging Polynomial (SIP) expansion is
+defined in terms of pixel coordinates $u,v$ relative to 
+an origin at {\tt CRPIX1}, {\tt CRPIX2} located on sky
+at {\tt CRVAL1}, {\tt CRVAL2}.  The on-sky location $x,y$
+of pixel $u,v$ is given by
+\begin{equation}
+\label{eqn:sip_expansion}
+\left(\begin{array}{c}x\\y\end{array}\right) = \left(\begin{array}{cc} \mathtt{CD1\_1}&\mathtt{CD1\_2}\\\mathtt{CD2\_1}&\mathtt{CD2\_2}\end{array}\right)\left(\begin{array}{c} u + f(u,v)\\v+g(u,v)\end{array}\right).
+\end{equation}
+\noindent
+Note that the {\tt CD} matrix contains all the units (of pixel scale).
+
+The functions $f(u,v)$ and $g(u,v)$ define the polynomial expansions that provide the distortion. These
+functions are given by
+\begin{eqnarray}
+\label{eqn:sip_f}
+f(u,v) = \sum_{p,q} \sipA{p}{q} \,u^p \,v^q, & p+q \leq \mathtt{A\_ORDER},
+\end{eqnarray}
+\begin{eqnarray}
+\label{eqn:sip_b}
+g(u,v) = \sum_{p,q} \sipB{p}{q} \,u^p \,v^q, & p+q \leq \mathtt{B\_ORDER},
+\end{eqnarray}
+\noindent
+where $\sipA{p}{q}$ and $\sipB{p}{q}$ are the coefficients that encode the degree of 
+distortion, and $\mathtt{A\_ORDER}$
+and $\mathtt{B\_ORDER}$ limit the number of terms in the distortion model. Note that the sum $p+q$ is less
+than or equal to $\mathtt{A\_ORDER}$ (for $f(u,v)$) or $\mathtt{B\_ORDER}$ (for $g(u,v)$). In a record of the
+SIP coefficients, any unspecified coefficient is assumed to be zero.
+
+The original SIP definition only included quadratic and higher terms, such that third-order model would be written
+\begin{eqnarray}
+f_{old}(u,v) = \sipA{2}{0}u^2 + \sipA{0}{2}v^2 + \sipA{1}{1}uv + \sipA{2}{1}u^2 v + \sipA{1}{2}uv^2 + \sipA{3}{0}u^3 + \sipA{0}{3}v^3,\\
+g_{old}(u,v) = \sipB{2}{0}u^2 + \sipB{0}{2}v^2 + \sipB{1}{1}uv + \sipB{2}{1}u^2 v + \sipB{1}{2}uv^2 + \sipB{3}{0}u^3 + \sipB{0}{3}v^3.
+\end{eqnarray}
+\noindent
+However, we will need the linear cross terms
+\begin{eqnarray}
+\label{eqn:fg}
+f(u,v) = \sipA{0}{1}v + \sipA{2}{0}u^2 + \sipA{0}{2}v^2 + \sipA{1}{1}uv + \sipA{2}{1}u^2 v + \sipA{1}{2}uv^2 + \sipA{3}{0}u^3 + \sipA{0}{3}v^3,\\
+g(u,v) = \sipB{1}{0}u +\sipB{2}{0}u^2 + \sipB{0}{2}v^2 + \sipB{1}{1}uv + \sipB{2}{1}u^2 v + \sipB{1}{2}uv^2 + \sipB{3}{0}u^3 + \sipB{0}{3}v^3.
+\end{eqnarray}
+\noindent
+Note that we expect $\sipA{1}{0}=0$ and $\sipB{0}{1}=0$ because they are degenerate with redefining the
+{\tt CD} matrix elements.
+
+To finish our SIP description, we should multiply through by the {\tt CD} matrix. It will be convenient
+for us to use a coordinate system where the off diagonal terms are zero (aligned with the detector) and
+decompose the {\tt CD} matrix as
+\begin{equation}
+\left(\begin{array}{cc} \mathtt{CD1\_1}&\mathtt{CD1\_2}\\\mathtt{CD2\_1}&\mathtt{CD2\_2}\end{array}\right) = 
+\left(\begin{array}{cc} \mathtt{CDELT1} \cdot  \NCu & 0\\0 &\mathtt{CDELT2} \cdot \NCv \end{array}\right).
+\end{equation}
+\noindent
+Note that $\NCu$ and $\NCv$ account for a possible parity change between the detector and sky coordinates (they are equal to $\pm1$ depending on the detector),
+and this decomposition only helps us because of convenient definitions made by STScI in their SIAF expansion (see below).
+
+We can then write the SIP distortion as
+\begin{equation}
+\label{eqn:sip_x}
+x = \mathtt{CDELT1} \cdot  \NCu \left[u + f(u,v)\right],
+\end{equation}
+\noindent
+\begin{equation}
+\label{eqn:sip_y}
+y = \mathtt{CDELT2} \cdot  \NCv \left[v + g(u,v)\right],
+\end{equation}
+\noindent
+where $f(u,v)$ and $g(u,v)$ are given to, e.g., third order by Equations \ref{eqn:fg} and 7.
+
+\section{SIAF Expansion Definition}
+
+The SIAF expansion is given by STScI and defined in JWST Technical Report {\tt JWST-STScI-001550} (hereafter JTR1550). There
+are a few steps involved, and a few choice cancellations make things a bit easier for NIRCam than they
+could be!
+
+First, there is a translation between the {\tt Detector} coordinates ($u$ and $v$ from above) to the
+{\tt Science} coordinates. There is a further translation from {\tt Science} to {\tt Ideal} coordinates
+that involve the SIAF polynomial expansion. It is important to note that the SIAF expansion coefficients
+are \emph{dimensionful}.
+
+\subsection{Detector to Science}
+
+The detector to science coordinate conversion is given in \S 4.1 of JTR1550 as
+\begin{eqnarray}
+XSci - XSciRef &=& DetSciParity\left[\left(XDet - XDetRef\right)\cos\left(DetSciYAngle\right)\right.\\
+               &&+ \left.\left(YDet - YDetRef\right)\sin\left(DetSciYAngle\right)\right],\nonumber
+\end{eqnarray}
+\begin{eqnarray}
+YSci - YSciRef &=& -\left(XDet - XDetRef\right)\sin\left(DetSciYAngle\right)\\ 
+               &&+ \left(YDet - YDetRef\right)\cos\left(DetSciYAngle\right),\nonumber
+\end{eqnarray}
+\noindent
+where the absurd notation is in the original.  Note that for all NIRCam SCAs, $XDetRef=XSciRef=1024.5$
+and all $YDetRef=YSciRef=1024.5$, so if we pick $\mathtt{CRPIX1}=1024.5$, $\mathtt{CRPIX2}=1024.5$,
+then $u\equiv\left(XDet - XDetRef\right)$ and $v\equiv\left(YDet - YDetRef\right)$. Also, for
+all NIRCam SCAs, $DetSciParity=-1$. Lastly, for NIRCam SCAs we have either $DetSciYAngle=0$ or
+$DetSciYAngle=\pi$. We then can write
+\begin{eqnarray}
+XSci - XSciRef &=& DetSciParity\cos\left(DetSciYAngle\right) u
+\end{eqnarray}
+\begin{eqnarray}
+YSci - YSciRef &=& \cos\left(DetSciYAngle\right) v
+\end{eqnarray}
+\noindent
+Let us define $\NCu \equiv DetSciParity\cos\left(DetSciYAngle\right)$ and 
+$\NCv \equiv \cos\left(DetSciYAngle\right)$, so we are left with
+\begin{eqnarray}
+XSci - XSciRef &=& \NCu u
+\end{eqnarray}
+\noindent
+and
+\begin{eqnarray}
+YSci - YSciRef &=& \NCv v.
+\end{eqnarray}
+
+\subsection{Science to Ideal}
+The SIAF expansion is written in terms of a conversion between the {\tt Science}
+and {\tt Ideal} coordinates as
+\begin{equation}
+\label{eqn:siaf_xidl}
+XIdl = \sum_{i=1}^{degree} \sum_{j=0}^{i} Sci2IdlCoefX_{i,j}\left(XSci-XSciRef\right)^{i-j}\left(YSci-YSciRef\right)^j
+\end{equation}
+\begin{equation}
+\label{eqn:siaf_yidl}
+YIdl = \sum_{i=1}^{degree} \sum_{j=0}^{i} Sci2IdlCoefY_{i,j}\left(XSci-XSciRef\right)^{i-j}\left(YSci-YSciRef\right)^j
+\end{equation}
+\noindent
+where $degree=Sci2IdlDegree$ (a parameter given in the SIAF file for each detector)
+and again the notation is originally absurd. To give ourselves a break, we will 
+define $X_{ij} \equiv Sci2IdlCoefX_{i,j}$ and $Y_{ij} \equiv Sci2IdlCoefY_{i,j}$ and
+identify $XIdl\equiv x$ and $YIdl\equiv y$.
+
+Since the SIAF expansion is dimensionful, to match terms with the SIP expansion
+it will be helpful for us to write out fully the terms and then infer a recursion
+relationship between the coefficients in each expansion. Given Equations
+\ref{eqn:siaf_xidl} and \ref{eqn:siaf_yidl}, and the equivalences defined in the
+previous paragraph, we can write the expansions to, e.g., $degree=3$ as
+\begin{eqnarray}
+\label{eqn:siaf_x}
+x &=& X_{10} \NCu u + X_{11} \NCv v + X_{20} \NCu^2 u^2 \\
+  &&+ X_{21}\NCu \NCv uv + X_{22} \NCv^2 v^2 + X_{30} \NCu^3 u^3 \nonumber \\
+  && + X_{31}\NCu^2 \NCv u^2 v + X_{32} \NCu \NCv^2 u v^2  + X_{33} \NCv^3 v^3\nonumber,
+\end{eqnarray}
+\noindent
+and
+\begin{eqnarray}
+\label{eqn:siaf_y}
+y &=& Y_{10} \NCu u + Y_{11} \NCv v + Y_{20} \NCu^2 u^2 \\
+  &&+ Y_{21}\NCu \NCv uv + Y_{22} \NCv^2 v^2 + Y_{30} \NCu^3 u^3 \nonumber \\
+  && + Y_{31}\NCu^2 \NCv u^2 v + Y_{32} \NCu \NCv^2 u v^2  + Y_{33} \NCv^3 v^3\nonumber.
+\end{eqnarray}
+
+\section{Reconciling the SIAF and SIP Expansions}
+
+We can now match terms and infer the relationship between the SIP and SIAF coefficients by
+setting the right hand sides of Equations \ref{eqn:sip_x} and \ref{eqn:sip_y} equal to the
+right hand sides of Equations \ref{eqn:siaf_x} and \ref{eqn:siaf_y} and grouping terms by
+their polynomial order in the expansion. Let us start with the $x$ expansion,
+\begin{eqnarray}
+\label{eqn:long_x}
+\mathtt{CDELT1} \cdot  \NCu u  &&\\
++ \mathtt{CDELT1} \cdot  \NCu \left[  \sipA{0}{1}v + \sipA{2}{0}u^2 + \sipA{0}{2}v^2 \right.&& \nonumber\\
+\left. + \sipA{1}{1}uv + \sipA{2}{1}u^2 v + \sipA{1}{2}uv^2 + \sipA{3}{0}u^3 + \sipA{0}{3}v^3\right] \nonumber&&\\ 
+&=& X_{10} \NCu u + X_{11} \NCv v + X_{20} \NCu^2 u^2 \nonumber\\
+  &&+ X_{21}\NCu \NCv uv + X_{22} \NCv^2 v^2 + X_{30} \NCu^3 u^3 \nonumber \\
+  && + X_{31}\NCu^2 \NCv u^2 v + X_{32} \NCu \NCv^2 u v^2  + X_{33} \NCv^3 v^3\nonumber.
+\end{eqnarray}
+\noindent
+We want to express the SIP coefficients in terms of the
+SIAF coefficients.  We will define for the SIAF
+coefficients that $\tilde{X}_{ij} = X_{ij}/\mathtt{CDELT1}$.
+We can identify the correspondence between coefficients as
+\begin{eqnarray}
+\label{eqn:matched_x}
+X_{10} &\equiv& \mathtt{CDELT1} \\
+\sipA{0}{1} &\equiv& \tilde{X}_{11} \NCu^{-1} \NCv \\
+\sipA{2}{0} &\equiv& \tilde{X}_{20} \NCu \\
+\sipA{0}{2} &\equiv& \tilde{X}_{22} \NCu^{-1} \NCv^{2} \\
+\sipA{1}{1} &\equiv& \tilde{X}_{21} \NCv \\
+\sipA{2}{1} &\equiv& \tilde{X}_{31} \NCu \NCv \\
+\sipA{1}{2} &\equiv& \tilde{X}_{32} \NCv^{2} \\
+\sipA{3}{0} &\equiv& \tilde{X}_{30} \NCu^{2} \\
+\sipA{0}{3} &\equiv& \tilde{X}_{33} \NCu^{-1} \NCv^{3}.
+\end{eqnarray}
+\noindent
+Given that we know $\NCu^2 = 1$, we can multiply both sides by unity and rewrite these
+equations conveniently as
+\begin{equation}
+\label{eqn:siaf_to_sip_x}
+\sipA{i}{j} = \tilde{X}_{(i+j) j} \NCu^{(i+1)} \NCv^j.
+\end{equation}
+\noindent
+Note that there is no $\sipA{1}{0}$ term in the expansion
+as the linear order term in $u$ in the SIP expansion is
+already handled by multiplying the $\mathtt{CD}$ matrix
+by $(u +f, v + g)$, so $\sipA{1}{0} = 0$. Using that
+$\NCv^2 = 1$, 
+we can write similar equations for the $y$ coordinate as
+\begin{equation}
+\label{eqn:siaf_to_sip_y}
+\sipB{i}{j} = \tilde{Y}_{(i+j) j} \NCu^{i}\NCv^{(j+1)},
+\end{equation}
+\noindent
+where $\tilde{Y}_{ij} \equiv Y_{ij}/\mathtt{CDELT2}$.
+We note that $Y_{11} = \mathtt{CDELT2}$, and
+$B_{01} = 0$ because the linear order $v$ expansion
+term is handled by $\mathtt{CD}$ matrix
+by $(u +f, v + g)$.
+
+\section{Summary}
+
+We have computed the correspondence between the SIAF polynomial
+expansion coefficients, the SIP expansion coefficients, the
+parity matrix $\mathtt{PC}$, and the pixel scale vector
+$\mathtt{CDELT}$. To compute the SIP expansion from the SIAF
+expansion, use Equations \ref{eqn:siaf_to_sip_x} and \ref{eqn:siaf_to_sip_y}
+to compute $\sipA{i}{j}$ and $\sipB{i}{j}$ from $X_{ij}$, $Y_{ij}$,
+$\mathtt{CDELT}$, and $\mathtt{PC}$. To incorporate further rotations
+such that the sky and detector coordinates are rotated, apply a rotation
+to the $\mathtt{CD}$ matrix and then compute the sky coordinates from
+Equation \ref{eqn:sip_expansion} with the rotated $\mathtt{CD}$ matrix
+(noting that $\mathtt{PC1\_1}$ and $\mathtt{PC2\_2}$ in Equations
+\ref{eqn:siaf_to_sip_x}
+ and \ref{eqn:siaf_to_sip_y} are defined in the unrotated frame when the
+ sky and detector are aligned).
+
+\end{document}
