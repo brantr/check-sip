@@ -38,7 +38,7 @@ siaf["x_det_ref"] = CRPIX1
 siaf["y_det_ref"] = CRPIX2
 
 #print some info if desired
-verbose = False
+verbose = True
 if(verbose):
 	print("XSciRef = ",siaf["x_sci_ref"])
 	print("YSciRef = ",siaf["y_sci_ref"])
@@ -61,7 +61,7 @@ if(verbose):
 CDELT1, CDELT2, NC, Apq, Bpq, A_ORDER, B_ORDER = siaf_to_sip(siaf, Sci2IdlCoeffX, Sci2IdlCoeffY)
 
 #if desired, print the SIP coefficients to screen
-verbose = False
+verbose = True
 if(verbose):
 	sip_print_coeffs(Apq,Bpq)
 
