@@ -359,15 +359,25 @@ Let's match the terms
 
 \begin{eqnarray}
 \label{eqn:matched_inv}
+\sipAP{0}{0} &\equiv& \NCu^{-1} \siafXP{0}{0}\\
 \sipAP{1}{0} &\equiv& \mathtt{CDELT1}\siafXP{1}{0} - 1 \\
 \sipAP{0}{1} \CDv^{-1} y &\equiv& \NCu^{-1} \siafXP{1}{1} y \\
 \sipAP{2}{0} \CDu^{-2} x^2 &\equiv& \NCu^{-1}  \siafXP{2}{0} x^2\\
 \sipAP{0}{2} \CDv^{-2} y^2 &\equiv& \NCu^{-1} \siafXP{2}{2} y^2\\
-\sipAP{1}{1} &\equiv& \tilde{X}_{21} \NCv \\
-\sipAP{2}{1} &\equiv& \tilde{X}_{31} \NCu \NCv \\
-\sipAP{1}{2} &\equiv& \tilde{X}_{32} \NCv^{2} \\
-\sipAP{3}{0} &\equiv& \tilde{X}_{30} \NCu^{2} \\
-\sipAP{0}{3} &\equiv& \tilde{X}_{33} \NCu^{-1} \NCv^{3}.
+\sipAP{1}{1} \CDu^{-1} \CDv^{-1} xy &\equiv&  \NCu^{-1} \siafXP{2}{1} xy \\
+\sipAP{2}{1} \CDu^{-2}\CDv^{-1} x^2y &\equiv& \NCu^{-1} \siafXP{3}{1} x^2 y\\
+\sipAP{1}{2} \CDu^{-1}\CDv^{-2} xy^2 &\equiv& \NCu^{-1} \siafXP{3}{2} xy^2 \\
+\sipAP{3}{0} \CDu^{-3} x^3&\equiv& \NCu^{-1}  \siafXP{3}{0} x^3 \\
+\sipAP{0}{3} \CDv^{-3} y^3&\equiv& \NCu^{-1}  \siafXP{3}{3} y^3.
 \end{eqnarray}
-
+\noindent
+This can be written succinctly as
+\begin{equation}
+\sipAP{i}{j} = \siafXP{(i+j)}{j} \NCu^{(i+1)} \NCv^{j} \mathtt{CDELT1}^i \mathtt{CDELT2}^j,
+\end{equation}
+\noindent
+and correspondingly we have
+\begin{equation}
+\sipBP{i}{j} = \siafYP{(i+j)}{j} \NCu^{i} \NCv^{(j+1)} \mathtt{CDELT1}^i \mathtt{CDELT2}^j.
+\end{equation}
 \end{document}
