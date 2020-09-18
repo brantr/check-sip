@@ -10,8 +10,9 @@ for l in fl:
 		print(l.strip('\n').split(','))
 
 	if( ((i>=14)&(i<=18))|((i>=20)&(i<=24)) ):
-		print(i,len(l.split(',')))
-		print(l.split(',')[0:5])
+		#print(i,len(l.split(',')))
+		#print(l.split(',')[0:5])
+
 		k = 1
 		AperName = (fl[1].strip('\n').split(',')[k])
 		AperVal  = (l.strip('\n').split(',')[k])
@@ -73,6 +74,7 @@ for l in fl:
 		Sci2IdlDeg  = (fl[1].strip('\n').split(',')[k])
 		Sci2IdlDegV = (l.strip('\n').split(',')[k])
 		k+=1 
+
 		Sci2IdlX00  = (fl[1].strip('\n').split(',')[k])
 		Sci2IdlX00V = (l.strip('\n').split(',')[k])
 		k+=1 
@@ -428,7 +430,7 @@ for l in fl:
 		s += "'%s':%s,"  % (Idl2SciY52,Idl2SciY52V)
 		s += "'%s':%s,"  % (Idl2SciY53,Idl2SciY53V)
 		s += "'%s':%s,"  % (Idl2SciY54,Idl2SciY54V)
-		s += "'%s':%s,"  % (Idl2SciY55,Idl2SciY55V)
+		s += "'%s':%s}"  % (Idl2SciY55,Idl2SciY55V)
 
 		print(s)
 	i+=1
