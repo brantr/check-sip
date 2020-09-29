@@ -381,8 +381,8 @@ and correspondingly we have
 \sipBP{i}{j} = \siafYP{(i+j)}{j} \NCu^{i} \NCv^{(j+1)} \mathtt{CDELT1}^i \mathtt{CDELT2}^j.
 \end{equation}
 
-\section{TODO}
+\section{Another Potential Issue?}
 
-Well, as it turns out $XSciScale\ne Sci2IdlX10$.  This means that $\sipA{1}{0}\ne0$, but will be small. We will come back to this.
+Well, as it turns out $XSciScale\ne Sci2IdlX10$.  This means that after all this $\sipA{1}{0}\ne0$, but will it be small. It's currently implemented by setting $\sipA{1}{0}$ to the difference between $XSciScale$ and  $Sci2IdlX10$, divided by pixel scale. Same for $\sipB{0}{1}$.
 
 \end{document}
